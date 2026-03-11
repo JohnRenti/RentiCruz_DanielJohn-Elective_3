@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytical Dashboard</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .control {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+    <!-- Chart.js CDN -->
+    <script src="chart.js"></script>
+    <script src="papa.js"></script>
+</head>
+
+<body>
+
+    <h2>Operational Performance Dashboard with File</h2>
+
+    <div class="control">
+        <label>Upload:</label> <input type="file" id="csvFile" accept=".csv" onchange="loadAndProcess()">
+        <label>Start:</label> <input type="date" id="startDate" onchange="updateChart()">
+        <label>End:</label> <input type="date" id="endDate" onchange="updateChart()">
+    </div>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        let fullData = [];
+        let myChart = null; // Initialize chart variable
+
+        function loadAndProcess() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                alert('Please upload a valid CSV file.');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                complete: function (results) {
+                    if (results.data.length === 0 || Object.keys(results.data[0]).length < 2) {
+                        alert('Invalid or empty CSV file. Please upload a valid file.');
+                        return;
+                    }
+                    fullData = results.data;
+                    updateChart();
+                },
+                error: function () {
+                    alert('Error parsing the CSV file. Please try again.');
+                }
+            });
+        }
+
+        function updateChart() {
+            if (fullData.length === 0) return;
+
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+
+            // Filter data based on date range
+            const filtered = fullData.filter(d => {
+                const date = new Date(d[Object.keys(d)[0]]); // Assume first column is the date
+                if (start && end) {
+                    return date >= new Date(start) && date <= new Date(end);
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                alert('No data available for the selected date range.');
+                return;
+            }
+
+            const keys = Object.keys(fullData[0]); // Dynamically get column names
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            if (myChart) myChart.destroy(); // Destroy previous chart instance
+
+            myChart = new Chart(ctx, {
+                data: {
+                    labels: filtered.map(d => d[keys[0]]), // Use first column as labels
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: keys[1], // Use second column for bar data
+                            data: filtered.map(d => d[keys[1]]),
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                        },
+                        {
+                            type: 'line',
+                            label: keys[2], // Use third column for line data
+                            data: filtered.map(d => d[keys[2]]),
+                            borderColor: 'red',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
