@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operational Performance Dashboard</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .control {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <h2>Operational Performance Dashboard</h2>
+
+    <div class="control">
+        <label>Select Bar Metric</label>
+
+        <select id="barMetricSelector" onchange="updateChart()">
+            <option value="revenue">Revenue</option>
+            <option value="units">Units Sold</option>
+        </select>
+
+        <label>Start Date</label>
+        <input type="date" id="startDate" value="2026-01-01">
+
+        <label>End Date</label>
+        <input type="date" id="endDate" value="2026-12-31">
+
+        <button onclick="updateChart()">Apply Filter</button>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+
+        const fullData = [
+            { date: '2026-01-05', revenue: 9537, units: 1357 },
+            { date: '2026-03-12', revenue: 6736, units: 615 },
+            { date: '2026-12-18', revenue: 3794, units: 6752 },
+            { date: '2026-01-25', revenue: 8673, units: 3496 },
+            { date: '2025-01-05', revenue: 6486, units: 5761 },
+            { date: '2024-12-12', revenue: 3875, units: 2589 },
+            { date: '2026-02-18', revenue: 6753, units: 1126 },
+            { date: '2025-08-25', revenue: 2466, units: 1950 }
+        ];
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+
+        let myChart = new Chart(ctx, {
+            data: {
+                labels: fullData.map(d => d.date),
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Bar Metric',
+                        data: fullData.map(d => d.revenue),
+                        backgroundColor: 'rgba(54,162,235,0.5)'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Units Sold (Trend)',
+                        data: fullData.map(d => d.units),
+                        borderColor: 'red',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function updateChart() {
+
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            const barMetric = document.getElementById('barMetricSelector').value;
+
+            const filtered = fullData.filter(item =>
+                item.date >= start && item.date <= end
+            );
+
+            myChart.data.labels = filtered.map(item => item.date);
+            myChart.data.datasets[0].data = filtered.map(item => item[barMetric]);
+            myChart.data.datasets[1].data = filtered.map(item => item.units);
+
+            myChart.update();
+
+        }
+
+    </script>
+
+</body>
+
+</html>
