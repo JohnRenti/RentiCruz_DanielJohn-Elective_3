@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Analytical Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .widget {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script src="chart.js"></script> <!-- used cdn if may net-->
+</head>
+
+<body>
+    <h1>Academic Dashboard</h1>
+    <div class="control">
+        <label for="">Start Date</label><input type="date" id="startDate" value="2026-01-01">
+        <label for="">End Date</label><input type="date" id="endDate" value="2026-01-31">
+        <button onclick="updateChart()">Apply Filter</button>
+    </div>
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+    <script>
+        const fullData = [
+            { date: '2026-01-05', value: 12 },
+            { date: '2026-03-12', value: 19 },
+            { date: '2026-12-18', value: 15 },
+            { date: '2026-01-25', value: 22 },
+            { date: '2025-01-05', value: 12 },
+            { date: '2024-12-12', value: 19 },
+            { date: '2026-02-18', value: 15 },
+            { date: '2025-08-25', value: 22 },
+        ];
+        const ctx = document.getElementById('myChart').getContext('2d');
+        let myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: fullData.map(d => d.date),
+                datasets: [{ label: 'Performance Metrics', data: fullData.map(d => d.value), backgroundColor: 'blue' }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        function updateChart() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+
+            const filtered = fullData.filter(item => item.date >= start && item.date <= end);
+
+            myChart.data.labels = filtered.map(item => item.date);
+            myChart.data.datasets[0].data = filtered.map(item => item.value);
+            myChart.update();
+        }
+    </script>
+    
+</body>
+
+</html>
